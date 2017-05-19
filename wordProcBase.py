@@ -18,8 +18,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from nltk.tokenize import word_tokenize, sent_tokenize, WhitespaceTokenizer, TweetTokenizer
 
-from progressbar import AnimatedMarker, Bar, BouncingBar, Counter, ETA, \
-    AdaptiveETA, FileTransferSpeed, FormatLabel, Percentage, \
+from progressbar import Bar, ETA, FormatLabel, Percentage, \
     ProgressBar, ReverseBar, RotatingMarker, \
     SimpleProgress, Timer
 
@@ -33,11 +32,11 @@ elif _system_ == 'Linux':
 
 
 
-VD_norms = _MAIN_DIR_ + "/Data/Corpus/VAD_norms/Ratings_Warriner_et_al.csv"
-fb_post_file = _MAIN_DIR_ + "/Data/VA_Proc/emtion_tweets/FB_valence_arousal/dataset-fb-valence-arousal-anon.csv"
+VD_norms           = _MAIN_DIR_ + "/Data/Corpus/VAD_norms/Ratings_Warriner_et_al.csv"
+fb_post_file       = _MAIN_DIR_ + "/Data/VA_Proc/emtion_tweets/FB_valence_arousal/dataset-fb-valence-arousal-anon.csv"
 Pronouncing_stress = _MAIN_DIR_ + "/Data/Corpus/pronouncing/cmudict-0.7b"
-Pronouncing = _MAIN_DIR_ + "/Data/Corpus/pronouncing/cmudict_SPHINX_40"
-phones = _MAIN_DIR_ + "/Data/Corpus/pronouncing/cmudict-0.7b.phones"
+Pronouncing        = _MAIN_DIR_ + "/Data/Corpus/pronouncing/cmudict_SPHINX_40"
+phones             = _MAIN_DIR_ + "/Data/Corpus/pronouncing/cmudict-0.7b.phones"
 
 def get_pronounce_withStress_dict(infile = Pronouncing_stress):
 	pronounce_dict = {}
@@ -69,9 +68,9 @@ def get_pronounce_phones(infile = phones):
 	f = open(infile, 'rb')
 	line = f.readline()
 	while line:
-		phoneme, label = line.split('\t', 1)
+		phoneme, label       = line.split('\t', 1)
 		phones_dict[phoneme] = label.strip()
-		line = f.readline()
+		line                 = f.readline()
 	f.close()
 	return phones_dict
 
@@ -92,7 +91,7 @@ def split_data_random(data, ratio):
 	elif d_type == DictType:
 		data_1 = {}
 		data_2 = {}
-		keys = data.keys()
+		keys   = data.keys()
 		sample = random.sample(xrange(len(keys)), int(len(keys)*ratio))
 		keys_1 = [keys[i] for i in sample]
 		keys_2 = list(set(keys) - set(keys_1))
@@ -121,10 +120,10 @@ def tokenize2(text):
 # verb lemmatized
 def tokenize3(text):
 	wordnet_lemmatizer = WordNetLemmatizer()
-	tokens = word_tokenize(text)
-	tokens = [wordnet_lemmatizer.lemmatize(token, NOUN) for token in tokens]
-	tokens = [wordnet_lemmatizer.lemmatize(token, VERB) for token in tokens]
-	tokens = [wordnet_lemmatizer.lemmatize(token, ADJ) for token in tokens]
+	tokens             = word_tokenize(text)
+	tokens             = [wordnet_lemmatizer.lemmatize(token, NOUN) for token in tokens]
+	tokens             = [wordnet_lemmatizer.lemmatize(token, VERB) for token in tokens]
+	tokens             = [wordnet_lemmatizer.lemmatize(token, ADJ) for token in tokens]
 	return tokens
 
 # word tokenized
@@ -133,12 +132,12 @@ def tokenize3(text):
 # verb lemmatized
 def tokenize4(text):
 	wordnet_lemmatizer = WordNetLemmatizer()
-	tokens = word_tokenize(text)
-	wordset = set(words.words())
-	tokens = [wordnet_lemmatizer.lemmatize(token, NOUN) for token in tokens]
-	tokens = [wordnet_lemmatizer.lemmatize(token, VERB) for token in tokens]
-	tokens = [wordnet_lemmatizer.lemmatize(token, ADJ) for token in tokens]
-	tokens = [token for token in tokens if token in wordset]
+	tokens             = word_tokenize(text)
+	wordset            = set(words.words())
+	tokens             = [wordnet_lemmatizer.lemmatize(token, NOUN) for token in tokens]
+	tokens             = [wordnet_lemmatizer.lemmatize(token, VERB) for token in tokens]
+	tokens             = [wordnet_lemmatizer.lemmatize(token, ADJ) for token in tokens]
+	tokens             = [token for token in tokens if token in wordset]
 	return tokens
 
 # same to tokenize3, but remove punctuation with string.punctuation
@@ -150,7 +149,6 @@ def tokenize5(text):
 	wordnet_lemmatizer = WordNetLemmatizer()
 	translate_table = dict((ord(char), None) for char in string.punctuation)
 	if type(text) == str:
-		print text
 		tokens = word_tokenize(text.translate(None, string.punctuation)) # remove punctuation
 		tokens = [wordnet_lemmatizer.lemmatize(token, NOUN) for token in tokens]
 		tokens = [wordnet_lemmatizer.lemmatize(token, VERB) for token in tokens]
@@ -222,34 +220,35 @@ def get_fb_post_dict(filename = fb_post_file):
 
 
 def get_VA_word_dict(filename = VD_norms):
-	print "Processing VA words..."
+	print ("Processing VA words...")
 	word_dict = {}
 	widgets = [FormatLabel('Processed: %(value)d records (in: %(elapsed)s)')]
 	pbar = ProgressBar(widgets = widgets)
-	with open(filename, 'rb') as csvfile:
+	with open(filename, 'r') as csvfile:
 		spamreader = csv.reader(csvfile, delimiter = ',', quotechar = '"')
 		headers = next(spamreader)
 
 		# for row in spamreader:
 		for row in pbar((row for row in spamreader)):
-			word = row[1] # Word
-			V_value = row[2] # V.Mean.Sum
-			A_value = row[5] # A.Mean.Sum
-			VA_value = {}
+			word                = row[1] # Word
+			V_value             = row[2] # V.Mean.Sum
+			A_value             = row[5] # A.Mean.Sum
+			VA_value            = {}
 			VA_value['V_value'] = float(V_value)
 			VA_value['A_value'] = float(A_value)
-			word_dict[word] = VA_value
+			word_dict[word]     = VA_value
 			# time.sleep(0.03)
-	print "Finish Processing VA words."
+	print ("Finish Processing VA words.")
+	pbar.finish()
 	return word_dict
 
 
 def get_rangeVA_word_dict(maxV, minV, maxA, minA, filename = VD_norms):
 	if maxV > 9 or minV < 1 or maxA > 9 or minA < 1:
-		print "Values out of range!"
+		print ("Values out of range!")
 		return 
 
-	print "Processing VA words..."
+	print ("Processing VA words...")
 	word_dict = {}
 	widgets = [FormatLabel('Processed: %(value)d records (in: %(elapsed)s)')]
 	pbar = ProgressBar(widgets = widgets)
@@ -268,7 +267,7 @@ def get_rangeVA_word_dict(maxV, minV, maxA, minA, filename = VD_norms):
 			VA_value['V_value'] = float(V_value)
 			VA_value['A_value'] = float(A_value)
 			word_dict[word] = VA_value
-	print "Finish Processing VA words."
+	print ("Finish Processing VA words.")
 	return word_dict
 
 
@@ -276,12 +275,12 @@ def get_rangeVA_word_dict(maxV, minV, maxA, minA, filename = VD_norms):
 # doclist: list, contains dicts, each the key of the dict is the identifier of a text, the value of the dict is the text
 # ngram: (1, 2), means use gram or bigram
 # return: tfidf_results, the values of tfidf, sorted; vector_to_name: feature names
-def get_tf_idf(doclist, tokenizer = tokenize3, vocabulary = None, ngram = (1,1)):
-	vectorizer = CountVectorizer(tokenizer = tokenizer, ngram_range = ngram, stop_words = 'english', lowercase = True, vocabulary = vocabulary)	# Implements both tokenization and occurrence counting 
-	X = vectorizer.fit_transform(doclist)
-	transformer = TfidfTransformer()
-	tfidf = transformer.fit_transform(X)
-	# tfidf_results = np.argsort(tfidf.toarray())
+def get_tf_idf(doclist, tokenizer = tokenize3, use_idf = True, vocabulary = None, ngram = (1,1)):
+	vectorizer     = CountVectorizer(tokenizer = tokenizer, ngram_range = ngram, stop_words = 'english', lowercase = True, vocabulary = vocabulary)	# Implements both tokenization and occurrence counting 
+	X              = vectorizer.fit_transform(doclist)
+	transformer    = TfidfTransformer(use_idf = use_idf)
+	tfidf          = transformer.fit_transform(X)
+	# tfidf_results  = np.argsort(tfidf.toarray())
 	# vector_to_name = vectorizer.get_feature_names()
 	# return tfidf_results, vector_to_name
 	return tfidf
